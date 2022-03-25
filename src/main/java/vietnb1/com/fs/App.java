@@ -21,16 +21,8 @@ public class App extends Application {
 
         primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
             public void handle(WindowEvent we) {
-                System.out.println("STOP");
+                System.out.println("EXIT.");
                 AutoSimulate.running = false;
-
-                try {
-                    if (AutoSimulate.driver != null) {
-                        AutoSimulate.driver.close();
-                    }
-                } catch (Exception e) {
-                }
-
                 System.exit(0);
             }
         });

@@ -7,6 +7,7 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
+import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 
 public class AppController {
@@ -24,7 +25,7 @@ public class AppController {
     private Button btnRun;
 
     @FXML
-    private TextField txtPassword;
+    private PasswordField txtPassword;
 
     public static AutoSimulate autoSimulate;
 
@@ -54,14 +55,8 @@ public class AppController {
     @FXML
     void cancel(ActionEvent event) {
         btnRun.setDisable(false);
-        System.out.println("STOP");
+        System.out.println("CANCEL.");
         AutoSimulate.running = false;
-        try {
-            if (AutoSimulate.driver != null) {
-                AutoSimulate.driver.close();
-            }
-        } catch (Exception e) {
-        }
 
     }
 

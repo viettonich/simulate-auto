@@ -26,19 +26,23 @@ public class AutoSimulate extends Thread {
 
     public static WebDriver driver;
 
+    public static boolean running;
+
     private String username;
 
     private String password;
 
     private String path;
 
-    public static boolean running;
-
     private int count = 0;
-    
+
     private Button btnRun;
 
-    public AutoSimulate(String username, String password, String path,Button btnRun) {
+    private static final int NUMBER_TAB = 5;
+
+    private static final String URL = "https://platform.worldquantbrain.com/simulate";
+
+    public AutoSimulate(String username, String password, String path, Button btnRun) {
         super();
         this.username = username;
         this.password = password;
@@ -59,9 +63,7 @@ public class AutoSimulate extends Thread {
         driver.manage().window().maximize();
 
         // launching the specified URL
-        driver.get("https://platform.worldquantbrain.com/simulate");
-
-        // List<String> authen = readFile("authen.txt");
+        driver.get(URL);
 
         driver.findElement(By.id("email")).sendKeys(username);
 
@@ -74,7 +76,7 @@ public class AutoSimulate extends Thread {
         js.executeScript("arguments[0].click();", driver.findElement(By.xpath("//button[@type='submit']")));
 
         try {
-            Thread.sleep(2000L);
+            Thread.sleep(3000L);
             js.executeScript("arguments[0].click();",
                     driver.findElement(By.xpath("//div[@class='introjs-tooltipbuttons']/a[contains(., \"Skip\")]")));
 
@@ -89,55 +91,75 @@ public class AutoSimulate extends Thread {
 
         List<String> listCode = readFile(path);
 
+        int numberTab = NUMBER_TAB;
+        if (listCode.size() < NUMBER_TAB) {
+            numberTab = listCode.size();
+        }
+
+        if (numberTab > 1) {
+            for (int i = 0; i < numberTab; i++) {
+                js.executeScript("window.open(arguments[0], '_blank')", URL);
+            }
+        }
+
         Actions action = new Actions(driver);
 
-        for (int i = 0; i < listCode.size(); i++) {
+        int loop = 0;
+        int numberOfWindow = driver.getWindowHandles().size();
+        List<String> windows = new ArrayList<>(driver.getWindowHandles());
+
+        while (count < listCode.size()) {
             if (!running) {
                 break;
             }
-            StringSelection strSel = new StringSelection(listCode.get(i));
+
+            int indexWindow = loop % numberOfWindow;
+            driver.switchTo().window(windows.get(indexWindow));
+
+            loop++;
+            StringSelection strSel = new StringSelection(listCode.get(count));
             clipboard.setContents(strSel, null);
-            try {
-                WebElement elementViewLine = driver.findElement(By.xpath("//div[@class='view-line']"));
-                elementViewLine.click();
-                
-                action.keyDown(Keys.CONTROL);
-                action.sendKeys("a");
-                action.keyUp(Keys.CONTROL);
-                action.build().perform();
-                
-                action.sendKeys(Keys.DELETE).build().perform();
-                
 
-                action.keyDown(Keys.CONTROL);
-                action.sendKeys("v");
-                action.keyUp(Keys.CONTROL);
-                action.build().perform();
+            if (!existProgressBar()) {
+                try {
+                    WebElement elementViewLine = driver.findElement(By.xpath("//div[@class='view-line']"));
+                    elementViewLine.click();
 
-//                Screen s = new Screen();
-//                Pattern pattern = new Pattern(System.getProperty("user.dir") + "//simulate.PNG");
-//                pattern.similar(0.7f);
-//                s.click(pattern);
+                    action.keyDown(Keys.CONTROL);
+                    action.sendKeys("a");
+                    action.keyUp(Keys.CONTROL);
+                    action.build().perform();
 
-                js.executeScript("arguments[0].click();",
-                        driver.findElement(By.className("editor-simulate-button-text--is-code")));
+                    action.sendKeys(Keys.DELETE).build().perform();
 
-                Thread.sleep(2000L);
-                boolean flag = true;
-                while (flag) {
-                    try {
-                        driver.findElement(By.xpath("//*[@class='bar']"));
-                        Thread.sleep(1000L);
-                    } catch (Exception e) {
-                        flag = false;
-                    }
+                    action.keyDown(Keys.CONTROL);
+                    action.sendKeys("v");
+                    action.keyUp(Keys.CONTROL);
+                    action.build().perform();
+
+//                    Screen s = new Screen();
+//                    Pattern pattern = new Pattern(System.getProperty("user.dir") + "//simulate.PNG");
+//                    pattern.similar(0.7f);
+//                    s.click(pattern);
+
+                    js.executeScript("arguments[0].click();",
+                            driver.findElement(By.className("editor-simulate-button-text--is-code")));
+                    count++;
+                    Thread.sleep(2000L);
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
-            } catch (Exception e) {
-                e.printStackTrace();
             }
-            count++;
+
         }
-        
+
+        for (String window : windows) {
+            driver.switchTo().window(window);
+            while (existProgressBar()) {
+            }
+            driver.close();
+        }
+
         btnRun.setDisable(false);
         FileWriter writer;
         try {
@@ -149,20 +171,25 @@ public class AutoSimulate extends Thread {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        try {
-            if (driver != null) {
-                driver.close();
-            }
-        } catch (Exception e) {
+
+        if (driver != null) {
+            driver.quit();
+            driver = null;
         }
     }
 
-    @Override
-    protected void finalize() throws Throwable {
-        super.finalize();
-        System.out.println("close driver.");
-        if (driver != null)
-            driver.close();
+    private boolean existProgressBar() {
+        try {
+            driver.manage().timeouts().implicitlyWait(3, TimeUnit.SECONDS);
+            driver.findElement(By.xpath("//*[@class='bar']"));
+            return true;
+        } catch (Exception e) {
+            return false;
+        } finally {
+            if (driver != null) {
+                driver.manage().timeouts().implicitlyWait(5, TimeUnit.SECONDS);
+            }
+        }
     }
 
     private static List<String> readFile(String fileName) {
