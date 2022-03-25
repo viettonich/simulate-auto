@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import java.lang.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.layout.AnchorPane?>
+
+<AnchorPane prefHeight="359.0" prefWidth="556.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="vietnb1.com.fs.AppController">
+   <children>
+      <Label layoutX="59.0" layoutY="96.0" text="File Code" />
+      <Label layoutX="59.0" layoutY="145.0" text="Username" />
+      <Label layoutX="59.0" layoutY="180.0" text="Password" />
+      <Button fx:id="btnRun" layoutX="127.0" layoutY="235.0" mnemonicParsing="false" onAction="#clickRun" prefHeight="25.0" prefWidth="130.0" text="Run" />
+      <Button fx:id="btnCancel" layoutX="300.0" layoutY="235.0" mnemonicParsing="false" onAction="#cancel" prefHeight="25.0" prefWidth="119.0" text="Cancel" />
+      <TextField id="txtUsername" fx:id="txtUsername" layoutX="167.0" layoutY="141.0" prefHeight="25.0" prefWidth="330.0" />
+      <TextField id="txtPassword" fx:id="txtPassword" layoutX="167.0" layoutY="185.0" prefHeight="25.0" prefWidth="330.0" />
+      <TextField id="txtFile" fx:id="txtFile" layoutX="167.0" layoutY="92.0" prefHeight="25.0" prefWidth="330.0" />
+   </children>
+</AnchorPane>
